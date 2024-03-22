@@ -22,6 +22,8 @@ class RetinalDataset(Dataset):
         csv_file_path = split_dir / paths[2]
         self.labels_df = pd.read_csv(csv_file_path)
 
+        self._load_split()
+
     def _split_paths(self, split: str):
         if split == "train":
             return (
@@ -30,21 +32,40 @@ class RetinalDataset(Dataset):
                 "RFMiD_Training_Labels.csv"
             )
 
+    def _load_split(self):
+        images = []
+        labels = []
+
+        n = 512
+
+        for i, row in tqdm(self.labels_df.iterrows(), total=n):
+            if i >= n:
+                break
+
+            # img_id = self.labels_df.loc[idx, "ID"]
+            # label = self.labels_df.loc[idx, "Disease_Risk"]
+            img_id = row["ID"]
+            label = row["Disease_Risk"]
+            
+            img_path = str(self.images_dir / f"{img_id}.png")
+            image = Image.open(img_path).convert("RGB")
+            
+            if self.transform:
+                image = self.transform(image)
+
+            images.append(image)
+            labels.append(label)
+
+        self.images = images
+        self.labels = labels
 
     def __len__(self):
-        return len(self.labels_df)
+        return len(self.images)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        img_id = self.labels_df.loc[idx, "ID"]
-        label = self.labels_df.loc[idx, "Disease_Risk"]
-        
-        img_path = str(self.images_dir / f"{img_id}.png")
-        image = Image.open(img_path).convert("RGB")
-        
-        if self.transform:
-            image = self.transform(image)
+        return self.images[idx], self.labels[idx]
 
-        return image, label
+        
