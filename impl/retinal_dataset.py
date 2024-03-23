@@ -34,6 +34,12 @@ class RetinalDataset(Dataset):
                 "Training",
                 "RFMiD_Training_Labels.csv"
             )
+        if split == "test":
+            return (
+                "Test_Set/Test_Set",
+                "Test",
+                "RFMiD_Testing_Labels.csv"
+            )
 
     def _load_split(self):
         images = []
