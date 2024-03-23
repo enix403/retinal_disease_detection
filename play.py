@@ -1,56 +1,84 @@
-for i in range(1):
-    epoch_loss = 0
-    num_batches = 0
+class Metrics:
+    def __init__(self, dataset):
+        tp = 0 # True positves
+        fp = 0 # False positves
+        tn = 0 # True negatives
+        fn = 0 # True negatives
 
-    for images, labels in next(iter(train_dataloader)):
-        preds = model(images)
-        loss = loss_fn(preds, labels)
+        total = 0
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        dataloader = DataLoader(dataset, batch_size=64)
 
-        epoch_loss += loss.item()
-        num_batches += 1
+        with torch.no_grad():
+            for images, labels in dataloader:
+                logits = model(images)
+                pred_labels = logits.argmax(dim=1)
+                batch_size = pred_labels.shape[0]
+                total += batch_size
 
-    print(f"Epoch {i+1}: train_loss={epoch_loss:.10f}")
+                b_tp = (pred_labels * labels).sum()
+                b_fp = (pred_labels * (1 - labels)).sum()
+                b_tn = ((1 - pred_labels) * (1 - labels)).sum()
+                b_fn = ((1 - pred_labels) * labels).sum()
 
-print("Done")
+                tp += b_tp
+                fp += b_fp
+                tn += b_tn
+                fn += b_fn
+
+        self.tp = tp
+        self.fp = fp
+        self.tn = tn
+        self.fn = fn
+
+        self.total = total
+
+
+class Report:
+    def __init__(self, metrics):
+        self.metrics = metrics
+
+    def accuracy(self):
+        return (self.metrics.tp + self.metrics.tn) / self.metrics.total
+
+    def precision(self):
+        return self.metrics.tp / (self.metrics.tp + self.metrics.fp)
+
+    def recall(self):
+        return self.metrics.tp / (self.metrics.tp + self.metrics.fn)
+
+
+
+num_display_img = 6
+plt.figure(figsize=(12, 12))
+_, axs = plt.subplots(num_display_img / 2, 3,
+                 figsize=(6, 2 * num_display_img),
+                 sharex=True, sharey=True)
+
+for i in range(sample_count):
+    plt.subplot(5, 2, i + 1)
+    plt.imshow(images[i])
+    plt.title(f"True: {true_labels[i]}, Pred: {pred_labels[i][0]}")
+    plt.axis('off')
+plt.show()
+
 
 """
-for i in range(1):
-    epoch_loss = 0
-    b = 0
-
-    for images, labels in train_dataloader:
-        model.train()
-
-        optimizer.zero_grad()
-        preds = model(images)
-        loss = loss_fn(preds, labels.view(-1, 1).float())
-        print(f"{b+1}: {loss}")
-
-        loss.backward()
-        optimizer.step()
-
-        # epoch_loss += loss.item()
-        # num_batches += 1
-
-    # print(f"==== Epoch {i+1}: train_loss={epoch_loss:.10f}")
-
-print("Done")
+_, axs = plt.subplots(num_display_img, 3,,
+                 figsize=(6, 2 * num_display_img),,
+                 sharex=True, sharey=True),
+,
+for i in range(num_display_img):,
+ image = images[i],
+ noised_image = noised_images[i],
+ denoised_image = denoised_images[i],
+,
+ axs[i, 0].imshow(image.movedim(0,-1)),
+ axs[i, 1].imshow(noised_image.movedim(0,-1)),
+ axs[i, 2].imshow(denoised_image.movedim(0,-1)),
+,
+axs[0, 0].set_title(Original),
+axs[0, 1].set_title(Noised),
+axs[0, 2].set_title(Denoised)
 
 """
-
-
-@torch.no_grad()
-def calculate_loss(dataset):
-    dataloader = DataLoader(dataset, batch_size=64)
-
-    total_loss = 0
-    for images, labels in dataloader:
-        logits = model(images)
-        loss = loss_fn(logits, labels)
-        total_loss += loss.item()
-
-    return total_loss

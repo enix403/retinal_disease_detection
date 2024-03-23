@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class Model1(nn.Module):
+class ConvNetwork(nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = nn.Sequential(
@@ -22,7 +22,7 @@ class Model1(nn.Module):
             # x: (128, 52, 52)
             nn.MaxPool2d(2),
             # x: (128, 26, 26)
-            nn.Flatten(),
+            nn.Flatten(start_dim=-3, end_dim=-1),
             # x: (128*26*26 = 86528,)
             nn.Linear(128*26*26, 256),
             nn.ReLU(),
@@ -32,6 +32,7 @@ class Model1(nn.Module):
             nn.ReLU(),
             # x: (256,)
             nn.Linear(256, 2),
+            # x: (2,)
         )
 
     def forward(self, x):
