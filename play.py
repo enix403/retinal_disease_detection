@@ -41,3 +41,16 @@ for i in range(1):
 print("Done")
 
 """
+
+
+@torch.no_grad()
+def calculate_loss(dataset):
+    dataloader = DataLoader(dataset, batch_size=64)
+
+    total_loss = 0
+    for images, labels in dataloader:
+        logits = model(images)
+        loss = loss_fn(logits, labels)
+        total_loss += loss.item()
+
+    return total_loss
