@@ -48,20 +48,22 @@ class Report:
         return self.metrics.tp / (self.metrics.tp + self.metrics.fn)
 
 
+model.eval()
 
-num_display_img = 6
-plt.figure(figsize=(12, 12))
-_, axs = plt.subplots(num_display_img / 2, 3,
-                 figsize=(6, 2 * num_display_img),
-                 sharex=True, sharey=True)
+num_images = 9
+_, axs = plt.subplots(num_images // 3, 3,
+    figsize=(6, 2 * num_images // 3))
 
-for i in range(sample_count):
-    plt.subplot(5, 2, i + 1)
-    plt.imshow(images[i])
-    plt.title(f"True: {true_labels[i]}, Pred: {pred_labels[i][0]}")
-    plt.axis('off')
-plt.show()
 
+axs = axs.flatten().tolist()
+
+for i, ax in enumerate(axs):
+    image, label = test_dataset[i]
+    logits = model(image)
+    pred_label = logits.argmax(dim=0).item()
+
+    ax.imshow(image.movedim(0,-1))
+    ax.set_title(f"y={label}, pred={pred_label}")
 
 """
 _, axs = plt.subplots(num_display_img, 3,,
