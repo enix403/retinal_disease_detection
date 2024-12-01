@@ -5,6 +5,7 @@ from tqdm import tqdm
 import pandas as pd
 from PIL import Image
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 ROOT_DIR = "data/retinal-disease-classification"
@@ -49,13 +50,15 @@ class RetinalDataset(Dataset):
             # img_id = self.labels_df.loc[idx, "ID"]
             # label = self.labels_df.loc[idx, "Disease_Risk"]
             img_id = row["ID"]
-            label = row["Disease_Risk"]
             
             img_path = str(self.images_dir / f"{img_id}.png")
             image = Image.open(img_path).convert("RGB")
             
             if self.transform:
                 image = self.transform(image)
+
+            label = row["Disease_Risk"]
+            # label = F.one_hot(torch.tensor([label]), num_classes=2).flatten().float()
 
             images.append(image)
             labels.append(label)
