@@ -24,13 +24,16 @@ class Model1(nn.Module):
             # x: (128, 26, 26)
             nn.Flatten(),
             # x: (128*26*26 = 86528,)
-            nn.Linear(128*26*26, 512),
+            nn.Linear(128*26*26, 256),
             nn.ReLU(),
             # x: (512,)
             nn.Dropout(0.5),
-            nn.Linear(512, 1),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            # x: (256,)
+            nn.Linear(256, 2),
         )
 
     def forward(self, x):
-        logit = self.layers(x)
-        return logit
+        logits = self.layers(x)
+        return logits
