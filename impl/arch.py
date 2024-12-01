@@ -33,5 +33,4 @@ class Model1(nn.Module):
 
     def forward(self, x):
         logit = self.layers(x)
-        prob = F.sigmoid(logit)
-        return prob
+        return logit
