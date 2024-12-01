@@ -10,8 +10,10 @@ from torch.utils.data import Dataset, DataLoader
 ROOT_DIR = "data/retinal-disease-classification"
 
 class RetinalDataset(Dataset):
-    def __init__(self, split="train", transform=None):
+    def __init__(self, split="train", transform=None, num_rows=-1):
         self.transform = transform
+        self.num_rows = num_rows
+
         paths = self._split_paths(split)
 
         root_dir = Path(ROOT_DIR)
@@ -36,7 +38,9 @@ class RetinalDataset(Dataset):
         images = []
         labels = []
 
-        n = 512
+        n = self.num_rows
+        if n == -1:
+            n = len(self.labels_df)
 
         for i, row in tqdm(self.labels_df.iterrows(), total=n):
             if i >= n:
